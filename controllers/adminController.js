@@ -1,38 +1,55 @@
 const { db } = require('../config/firebase');
 const { FieldValue } = require('firebase-admin/firestore');
 
+// Helper function to validate product data for both add and update operations
+const validateProductPayload = (payload) => {
+  const { name, category, price, seller, location, availableQty, minimumQty, discount, image } = payload;
+
+  // Comprehensive validation
+  if (!name || !category || !price || !seller || !location || availableQty === undefined || minimumQty === undefined) {
+    const error = new Error('All required fields must be provided.');
+    error.statusCode = 400;
+    throw error;
+  }
+  if (Number(price) <= 0) {
+    const error = new Error('Price must be greater than 0');
+    error.statusCode = 400;
+    throw error;
+  }
+  if (Number(discount) < 0 || Number(discount) > 100) {
+    const error = new Error('Discount must be between 0 and 100');
+    error.statusCode = 400;
+    throw error;
+  }
+  if (Number(minimumQty) < 1) {
+    const error = new Error('Minimum quantity must be at least 1');
+    error.statusCode = 400;
+    throw error;
+  }
+  if (Number(availableQty) < Number(minimumQty)) {
+    const error = new Error('Available quantity cannot be less than minimum quantity');
+    error.statusCode = 400;
+    throw error;
+  }
+  // More robust image URL validation
+  if (image) {
+    try {
+      new URL(image);
+    } catch (_) {
+      const error = new Error("Invalid Image URL provided.");
+      error.statusCode = 400;
+      throw error;
+    }
+  }
+};
+
 // @desc    Add a product (Admin)
 const addProduct = async (req, res, next) => {
   try {
+    // Use the centralized validation helper
+    validateProductPayload(req.body);
+
     const { name, description, category, seller, location, price, discount, availableQty, minimumQty, image } = req.body;
-
-    // Point 2: Comprehensive validation
-    if (!name || !category || !price || !seller || !location || availableQty === undefined || minimumQty === undefined) {
-      res.status(400);
-      throw new Error('All required fields must be provided.');
-    }
-    if (Number(price) <= 0) {
-      res.status(400);
-      throw new Error('Price must be greater than 0');
-    }
-    if (Number(discount) < 0 || Number(discount) > 100) {
-      res.status(400);
-      throw new Error('Discount must be between 0 and 100');
-    }
-    if (Number(minimumQty) < 1) {
-      res.status(400);
-      throw new Error('Minimum quantity must be at least 1');
-    }
-    if (Number(availableQty) < Number(minimumQty)) {
-      res.status(400);
-      throw new Error('Available quantity cannot be less than minimum quantity');
-    }
-
-    // Point 7: Image URL validation
-    if (image && !image.startsWith("http")) {
-      res.status(400);
-      throw new Error("Invalid Image URL");
-    }
 
     const newProduct = {
       name,
@@ -53,6 +70,9 @@ const addProduct = async (req, res, next) => {
     const docRef = await db.collection('products').add(newProduct);
     res.status(201).json({ success: true, data: { _id: docRef.id, id: docRef.id, ...newProduct } });
   } catch (error) {
+    if (error.statusCode) {
+      res.status(error.statusCode);
+    }
     next(error);
   }
 };
@@ -61,6 +81,9 @@ const addProduct = async (req, res, next) => {
 const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
+    // Use the centralized validation helper
+    validateProductPayload(req.body);
+
     const { name, description, category, seller, location, price, discount, availableQty, minimumQty, image } = req.body;
 
     const docRef = db.collection('products').doc(id);
@@ -89,6 +112,9 @@ const updateProduct = async (req, res, next) => {
     await docRef.update(updatedProduct);
     res.status(200).json({ success: true, message: 'Product updated successfully' });
   } catch (error) {
+    if (error.statusCode) {
+      res.status(error.statusCode);
+    }
     next(error);
   }
 };
@@ -105,8 +131,15 @@ const updateStock = async (req, res, next) => {
     }
 
     const { availableQty } = req.body;
+    const newQty = Number(availableQty);
+
+    if (isNaN(newQty) || newQty < 0) {
+      res.status(400);
+      throw new Error("Invalid quantity provided. Must be a non-negative number.");
+    }
+
     await docRef.update({ 
-      availableQty: Number(availableQty),
+      availableQty: newQty,
       updatedAt: FieldValue.serverTimestamp()
     });
     res.status(200).json({ success: true, message: 'Stock updated' });
@@ -127,8 +160,15 @@ const updateDiscount = async (req, res, next) => {
     }
 
     const { discount } = req.body;
+    const newDiscount = Number(discount);
+
+    if (isNaN(newDiscount) || newDiscount < 0 || newDiscount > 100) {
+      res.status(400);
+      throw new Error("Invalid discount provided. Must be a number between 0 and 100.");
+    }
+
     await docRef.update({ 
-      discount: Number(discount),
+      discount: newDiscount,
       updatedAt: FieldValue.serverTimestamp()
     });
     res.status(200).json({ success: true, message: 'Discount updated' });
