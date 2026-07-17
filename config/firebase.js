@@ -1,21 +1,20 @@
-const { initializeApp, cert } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
-const { getAuth } = require("firebase-admin/auth");
-const { getStorage } = require("firebase-admin/storage");
+const admin = require("firebase-admin");
 
-const serviceAccount = require("./serviceAccountKey.json");
+const serviceAccount = JSON.parse(
+  process.env.FIREBASE_SERVICE_ACCOUNT
+);
 
-const app = initializeApp({
-  credential: cert(serviceAccount),
-  storageBucket: "fagrro.firebasestorage.app", // verify this bucket name in Firebase Console
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: "fagrro.firebasestorage.app",
 });
 
-const db = getFirestore(app);
-const auth = getAuth(app);
-const bucket = getStorage(app).bucket();
+const db = admin.firestore();
+const auth = admin.auth();
+const bucket = admin.storage().bucket();
 
 module.exports = {
-  app,
+  admin,
   db,
   auth,
   bucket,
