@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { 
+const {
   addProduct,
-  updateProduct, 
-  updateStock, 
-  updateDiscount, 
+  updateProduct,
+  updateStock,
+  updateDiscount,
+  activateProduct,
   deactivateProduct,
-  getDashboardStats
+  deleteProduct,
+  getDashboardStats,
 } = require('../controllers/adminController');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -34,8 +36,16 @@ router.patch('/products/:id/stock', updateStock);
 // @desc    Update only the discount percentage
 router.patch('/products/:id/discount', updateDiscount);
 
+// @route   PATCH /api/admin/products/:id/activate
+// @desc    Activate a product by setting active to true
+router.patch('/products/:id/activate', activateProduct);
+
 // @route   PATCH /api/admin/products/:id/deactivate
-// @desc    Soft delete a product by setting active to false
+// @desc    Deactivate a product by setting active to false
 router.patch('/products/:id/deactivate', deactivateProduct);
+
+// @route   DELETE /api/admin/products/:id
+// @desc    Permanently delete a product
+router.delete('/products/:id', deleteProduct);
 
 module.exports = router;

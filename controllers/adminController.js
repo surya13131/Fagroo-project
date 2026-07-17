@@ -137,24 +137,73 @@ const updateDiscount = async (req, res, next) => {
   }
 };
 
-// @desc    Toggle Product Deactivation
+// @desc    Deactivate a product
 const deactivateProduct = async (req, res, next) => {
   try {
     const docRef = db.collection('products').doc(req.params.id);
     const doc = await docRef.get();
-    
+
     if (!doc.exists) {
       res.status(404);
-      throw new Error('Product not found');
+      throw new Error("Product not found");
     }
 
-    const currentStatus = doc.data().active;
-    await docRef.update({ 
-      active: !currentStatus,
+    await docRef.update({
+      active: false,
       updatedAt: FieldValue.serverTimestamp()
     });
-    
-    res.status(200).json({ success: true, message: `Product ${!currentStatus ? 'activated' : 'deactivated'}` });
+
+    res.status(200).json({
+      success: true,
+      message: "Product deactivated",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Activate a product
+const activateProduct = async (req, res, next) => {
+  try {
+    const docRef = db.collection("products").doc(req.params.id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      res.status(404);
+      throw new Error("Product not found");
+    }
+
+    await docRef.update({
+      active: true,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Product activated",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete a product permanently
+const deleteProduct = async (req, res, next) => {
+  try {
+    const docRef = db.collection("products").doc(req.params.id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      res.status(404);
+      throw new Error("Product not found");
+    }
+
+    await docRef.delete();
+
+    res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
+    });
   } catch (error) {
     next(error);
   }
@@ -185,4 +234,13 @@ const getDashboardStats = async (req, res, next) => {
   }
 };
 
-module.exports = { addProduct, updateProduct, updateStock, updateDiscount, deactivateProduct, getDashboardStats };
+module.exports = {
+  addProduct,
+  updateProduct,
+  updateStock,
+  updateDiscount,
+  activateProduct,
+  deactivateProduct,
+  deleteProduct,
+  getDashboardStats,
+};
