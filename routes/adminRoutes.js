@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { addProduct } = require('../controllers/productController');
 const { 
+  addProduct,
   updateProduct, 
   updateStock, 
   updateDiscount, 
   deactivateProduct,
-  getDashboardStats 
+  getDashboardStats
 } = require('../controllers/adminController');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');

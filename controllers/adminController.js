@@ -1,155 +1,187 @@
 const { db, admin } = require('../config/firebase');
 
-// @desc    Edit a product (General details)
-// @route   PUT /api/admin/products/:id
-// @access  Private (Admin Only)
+// @desc    Add a product (Admin)
+const addProduct = async (req, res, next) => {
+  try {
+    const { name, description, category, seller, location, price, discount, availableQty, minimumQty, image } = req.body;
+
+    // Point 2: Comprehensive validation
+    if (!name || !category || !price || !seller || !location || availableQty === undefined || minimumQty === undefined) {
+      res.status(400);
+      throw new Error('All required fields must be provided.');
+    }
+    if (Number(price) <= 0) {
+      res.status(400);
+      throw new Error('Price must be greater than 0');
+    }
+    if (Number(discount) < 0 || Number(discount) > 100) {
+      res.status(400);
+      throw new Error('Discount must be between 0 and 100');
+    }
+    if (Number(minimumQty) < 1) {
+      res.status(400);
+      throw new Error('Minimum quantity must be at least 1');
+    }
+    if (Number(availableQty) < Number(minimumQty)) {
+      res.status(400);
+      throw new Error('Available quantity cannot be less than minimum quantity');
+    }
+
+    // Point 7: Image URL validation
+    if (image && !image.startsWith("http")) {
+      res.status(400);
+      throw new Error("Invalid Image URL");
+    }
+
+    const newProduct = {
+      name,
+      description: description || '',
+      category,
+      seller,
+      location,
+      price: Number(price),
+      discount: Number(discount || 0),
+      availableQty: Number(availableQty),
+      minimumQty: Number(minimumQty),
+      image: image || '',
+      active: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    const docRef = await db.collection('products').add(newProduct);
+    res.status(201).json({ success: true, data: { _id: docRef.id, id: docRef.id, ...newProduct } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update entire product (Admin)
 const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, category, seller, location, price, minimumQty } = req.body;
-    
-    const productRef = db.collection('products').doc(id);
-    const doc = await productRef.get();
+    const { name, description, category, seller, location, price, discount, availableQty, minimumQty, image } = req.body;
 
+    const docRef = db.collection('products').doc(id);
+    const doc = await docRef.get();
+    
+    // Point 3: Explicit existence check before updating
     if (!doc.exists) {
       res.status(404);
-      throw new Error('Product not found');
+      throw new Error("Product not found");
     }
 
-    // Strict field selection to prevent injection of unwanted fields
-    const updateData = {
+    const updatedProduct = {
+      name,
+      description: description || '',
+      category,
+      seller,
+      location,
+      price: Number(price),
+      discount: Number(discount || 0),
+      availableQty: Number(availableQty),
+      minimumQty: Number(minimumQty),
+      image: image || '',
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
-    
-    if (name) updateData.name = name;
-    if (category) updateData.category = category;
-    if (seller) updateData.seller = seller;
-    if (location) updateData.location = location;
-    if (price) updateData.price = Number(price);
-    if (minimumQty) updateData.minimumQty = Number(minimumQty);
 
-    await productRef.update(updateData);
+    await docRef.update(updatedProduct);
     res.status(200).json({ success: true, message: 'Product updated successfully' });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update available stock
-// @route   PATCH /api/admin/products/:id/stock
-// @access  Private (Admin Only)
+// @desc    Update Product Stock
 const updateStock = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { availableQty } = req.body;
-
-    if (availableQty === undefined || availableQty < 0) {
-      res.status(400);
-      throw new Error('Valid stock quantity is required');
-    }
-
-    const productRef = db.collection('products').doc(id);
+    const docRef = db.collection('products').doc(req.params.id);
+    const doc = await docRef.get();
     
-    // Check if product exists before updating
-    const doc = await productRef.get();
     if (!doc.exists) {
       res.status(404);
-      throw new Error('Product not found');
+      throw new Error("Product not found");
     }
 
-    await productRef.update({ 
+    const { availableQty } = req.body;
+    await docRef.update({ 
       availableQty: Number(availableQty),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
-
-    res.status(200).json({ success: true, message: 'Stock updated successfully' });
+    res.status(200).json({ success: true, message: 'Stock updated' });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Configure discount percentage
-// @route   PATCH /api/admin/products/:id/discount
-// @access  Private (Admin Only)
+// @desc    Update Product Discount
 const updateDiscount = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { discount } = req.body;
-
-    if (discount === undefined || discount < 0 || discount > 100) {
-      res.status(400);
-      throw new Error('Valid discount percentage (0-100) is required');
-    }
-
-    const productRef = db.collection('products').doc(id);
+    const docRef = db.collection('products').doc(req.params.id);
+    const doc = await docRef.get();
     
-    // Check if product exists before updating
-    const doc = await productRef.get();
     if (!doc.exists) {
       res.status(404);
-      throw new Error('Product not found');
+      throw new Error("Product not found");
     }
 
-    await productRef.update({ 
+    const { discount } = req.body;
+    await docRef.update({ 
       discount: Number(discount),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
-
-    res.status(200).json({ success: true, message: 'Discount configured successfully' });
+    res.status(200).json({ success: true, message: 'Discount updated' });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Deactivate (Soft Delete) a product
-// @route   PATCH /api/admin/products/:id/deactivate
-// @access  Private (Admin Only)
+// @desc    Toggle Product Deactivation
 const deactivateProduct = async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const productRef = db.collection('products').doc(id);
+    const docRef = db.collection('products').doc(req.params.id);
+    const doc = await docRef.get();
     
-    // Check if product exists before updating
-    const doc = await productRef.get();
     if (!doc.exists) {
       res.status(404);
       throw new Error('Product not found');
     }
 
-    // Soft delete by setting active to false
-    await productRef.update({ 
-      active: false,
+    const currentStatus = doc.data().active;
+    await docRef.update({ 
+      active: !currentStatus,
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
-
-    res.status(200).json({ success: true, message: 'Product deactivated successfully' });
+    
+    res.status(200).json({ success: true, message: `Product ${!currentStatus ? 'activated' : 'deactivated'}` });
   } catch (error) {
     next(error);
   }
 };
 
 // @desc    Get Admin Dashboard Stats
-// @route   GET /api/admin/dashboard
-// @access  Private (Admin Only)
 const getDashboardStats = async (req, res, next) => {
   try {
-    // Firestore count() is highly optimized and doesn't read all documents
-    const totalProducts = await db.collection('products').count().get();
-    const activeProducts = await db.collection('products').where('active', '==', true).count().get();
-    const totalEnquiries = await db.collection('enquiries').count().get();
+    const productsSnapshot = await db.collection('products').get();
+    let total = 0;
+    let active = 0;
     
-    res.status(200).json({
+    productsSnapshot.forEach(doc => {
+      total++;
+      if (doc.data().active !== false) active++;
+    });
+
+    const enquiriesSnapshot = await db.collection('enquiries').get();
+    const enquiries = enquiriesSnapshot.size;
+    
+    // Point 4: Matches frontend keys perfectly
+    res.status(200).json({ 
       success: true,
-      data: {
-        products: totalProducts.data().count,
-        activeProducts: activeProducts.data().count,
-        enquiries: totalEnquiries.data().count
-      }
+      data: { products: total, activeProducts: active, enquiries } 
     });
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = { updateProduct, updateStock, updateDiscount, deactivateProduct, getDashboardStats };
+module.exports = { addProduct, updateProduct, updateStock, updateDiscount, deactivateProduct, getDashboardStats };
