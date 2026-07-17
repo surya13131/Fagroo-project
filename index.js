@@ -6,6 +6,7 @@ require('dotenv').config();
 const productRoutes = require('./routes/productRoutes');
 const enquiryRoutes = require('./routes/enquiryRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
+const categoryRoutes = require('./routes/categoryRoutes'); // ✅ Imported category routes
 
 // Middleware Imports
 const { errorHandler } = require('./middleware/errorMiddleware');
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/products', productRoutes);
 app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/admin', adminRoutes); 
+app.use('/api/categories', categoryRoutes); // ✅ Mounted category routes
 
 // Health Check Route
 app.get('/', (req, res) => {
