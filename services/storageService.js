@@ -1,30 +1,30 @@
-const { bucket } = require("../config/firebase");
-const { v4: uuidv4 } = require("uuid");
+// const { bucket } = require("../config/firebase");
+// const { v4: uuidv4 } = require("uuid");
 
-const uploadImageToFirebase = async (file) => {
-  if (!file) return null;
+// const uploadImageToFirebase = async (file) => {
+//   if (!file) return null;
 
-  const fileName = `products/${uuidv4()}_${file.originalname}`;
-  const fileUpload = bucket.file(fileName);
+//   const fileName = `products/${uuidv4()}_${file.originalname}`;
+//   const fileUpload = bucket.file(fileName);
 
-  const stream = fileUpload.createWriteStream({
-    metadata: {
-      contentType: file.mimetype,
-    },
-  });
+//   const stream = fileUpload.createWriteStream({
+//     metadata: {
+//       contentType: file.mimetype,
+//     },
+//   });
 
-  return new Promise((resolve, reject) => {
-    stream.on("error", reject);
+//   return new Promise((resolve, reject) => {
+//     stream.on("error", reject);
 
-    stream.on("finish", async () => {
-      await fileUpload.makePublic();
+//     stream.on("finish", async () => {
+//       await fileUpload.makePublic();
 
-      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-      resolve(publicUrl);
-    });
+//       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+//       resolve(publicUrl);
+//     });
 
-    stream.end(file.buffer);
-  });
-};
+//     stream.end(file.buffer);
+//   });
+// };
 
-module.exports = { uploadImageToFirebase };
+// module.exports = { uploadImageToFirebase };
