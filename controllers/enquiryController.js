@@ -1,4 +1,5 @@
-const { db, admin } = require('../config/firebase');
+const { db } = require('../config/firebase');
+const { FieldValue } = require('firebase-admin/firestore');
 const { v4: uuidv4 } = require('uuid');
 
 // @desc    Submit a new buyer enquiry
@@ -52,7 +53,7 @@ const createEnquiry = async (req, res, next) => {
       productId,
       productName: product.name,
       status: 'Pending', // Default status
-      createdAt: admin.firestore.FieldValue.serverTimestamp() // Updated to server timestamp
+      createdAt: FieldValue.serverTimestamp() // Updated to server timestamp
     };
 
     // 4. Save to Firestore

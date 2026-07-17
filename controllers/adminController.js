@@ -1,4 +1,5 @@
-const { db, admin } = require('../config/firebase');
+const { db } = require('../config/firebase');
+const { FieldValue } = require('firebase-admin/firestore');
 
 // @desc    Add a product (Admin)
 const addProduct = async (req, res, next) => {
@@ -45,8 +46,8 @@ const addProduct = async (req, res, next) => {
       minimumQty: Number(minimumQty),
       image: image || '',
       active: true,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp()
     };
 
     const docRef = await db.collection('products').add(newProduct);
@@ -82,7 +83,7 @@ const updateProduct = async (req, res, next) => {
       availableQty: Number(availableQty),
       minimumQty: Number(minimumQty),
       image: image || '',
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     };
 
     await docRef.update(updatedProduct);
@@ -106,7 +107,7 @@ const updateStock = async (req, res, next) => {
     const { availableQty } = req.body;
     await docRef.update({ 
       availableQty: Number(availableQty),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     });
     res.status(200).json({ success: true, message: 'Stock updated' });
   } catch (error) {
@@ -128,7 +129,7 @@ const updateDiscount = async (req, res, next) => {
     const { discount } = req.body;
     await docRef.update({ 
       discount: Number(discount),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     });
     res.status(200).json({ success: true, message: 'Discount updated' });
   } catch (error) {
@@ -150,7 +151,7 @@ const deactivateProduct = async (req, res, next) => {
     const currentStatus = doc.data().active;
     await docRef.update({ 
       active: !currentStatus,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     });
     
     res.status(200).json({ success: true, message: `Product ${!currentStatus ? 'activated' : 'deactivated'}` });

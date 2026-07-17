@@ -1,5 +1,6 @@
 // controllers/categoryController.js
-const { db, admin } = require('../config/firebase');
+const { db } = require('../config/firebase');
+const { FieldValue } = require('firebase-admin/firestore');
 
 // @desc    Get all categories
 // @route   GET /api/categories
@@ -39,7 +40,7 @@ const addCategory = async (req, res, next) => {
     const newCategory = {
       name,
       description: description || '',
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     };
 
     const docRef = await db.collection('categories').add(newCategory);
