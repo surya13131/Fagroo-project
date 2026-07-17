@@ -6,15 +6,21 @@ require('dotenv').config();
 const productRoutes = require('./routes/productRoutes');
 const enquiryRoutes = require('./routes/enquiryRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
-const categoryRoutes = require('./routes/categoryRoutes'); // ✅ Imported category routes
+const categoryRoutes = require('./routes/categoryRoutes');
 
 // Middleware Imports
 const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
 
+// ✅ FIX: Configure CORS to only allow your specific frontend domain
+app.use(cors({
+  origin: 'https://fagroo-project-frontend.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
 // Basic Middleware
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -22,14 +28,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/products', productRoutes);
 app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/admin', adminRoutes); 
-app.use('/api/categories', categoryRoutes); // ✅ Mounted category routes
+app.use('/api/categories', categoryRoutes);
 
 // Health Check Route
 app.get('/', (req, res) => {
   res.send('Faggro Backend is running successfully!');
 });
 
-// Custom Global Error Handler (Replaces the inline try/catch handler)
+// Custom Global Error Handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
