@@ -7,7 +7,7 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 const app = initializeApp({
   credential: cert(serviceAccount),
-  storageBucket: "fagrro.firebasestorage.app",
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
 });
 
 const db = getFirestore(app);
