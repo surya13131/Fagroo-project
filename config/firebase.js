@@ -1,20 +1,20 @@
-const admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
+const { getAuth } = require("firebase-admin/auth");
+const { getStorage } = require("firebase-admin/storage");
 
-const serviceAccount = JSON.parse(
-  process.env.FIREBASE_SERVICE_ACCOUNT
-);
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+const app = initializeApp({
+  credential: cert(serviceAccount),
   storageBucket: "fagrro.firebasestorage.app",
 });
 
-const db = admin.firestore();
-const auth = admin.auth();
-const bucket = admin.storage().bucket();
+const db = getFirestore(app);
+const auth = getAuth(app);
+const bucket = getStorage(app).bucket();
 
 module.exports = {
-  admin,
   db,
   auth,
   bucket,
