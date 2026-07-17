@@ -9,6 +9,7 @@ const {
   deactivateProduct,
   deleteProduct,
   getDashboardStats,
+  getAllProducts,
 } = require('../controllers/adminController');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -19,6 +20,8 @@ router.use(verifyToken, isAdmin);
 // @route   GET /api/admin/dashboard
 // @desc    Get Admin Dashboard Stats
 router.get('/dashboard', getDashboardStats);
+
+router.get("/products", getAllProducts);
 
 // @route   POST /api/admin/products
 // @desc    Add a new product (Requires form-data with an 'image' file)

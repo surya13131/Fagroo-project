@@ -234,6 +234,30 @@ const getDashboardStats = async (req, res, next) => {
   }
 };
 
+// @desc    Get ALL products (Admin)
+const getAllProducts = async (req, res, next) => {
+  try {
+    const snapshot = await db.collection("products").get();
+
+    const products = [];
+
+    snapshot.forEach((doc) => {
+      products.push({
+        id: doc.id,
+        _id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    res.status(200).json({
+      success: true,
+      data: products,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   addProduct,
   updateProduct,
@@ -243,4 +267,5 @@ module.exports = {
   deactivateProduct,
   deleteProduct,
   getDashboardStats,
+  getAllProducts, // <-- add this
 };
