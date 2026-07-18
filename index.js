@@ -7,7 +7,7 @@ const productRoutes = require('./routes/productRoutes');
 const enquiryRoutes = require('./routes/enquiryRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
 const categoryRoutes = require('./routes/categoryRoutes');
-const authRoutes = require('./routes/authRoutes');
+
 
 const { errorHandler } = require('./middleware/errorMiddleware');
 
@@ -29,7 +29,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/admin', adminRoutes); 
 app.use('/api/categories', categoryRoutes);
-app.use('/api/auth', authRoutes);
+
 
 
 app.get('/', (req, res) => {
