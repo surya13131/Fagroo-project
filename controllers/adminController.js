@@ -1,11 +1,10 @@
 const { db } = require('../config/firebase');
 const { FieldValue } = require('firebase-admin/firestore');
 
-// Helper function to validate product data for both add and update operations
 const validateProductPayload = (payload) => {
   const { name, category, price, seller, location, availableQty, minimumQty, discount, image } = payload;
 
-  // Comprehensive validation
+ 
   if (!name || !category || !price || !seller || !location || availableQty === undefined || minimumQty === undefined) {
     const error = new Error('All required fields must be provided.');
     error.statusCode = 400;
@@ -31,7 +30,7 @@ const validateProductPayload = (payload) => {
     error.statusCode = 400;
     throw error;
   }
-  // More robust image URL validation
+
   if (image) {
     try {
       new URL(image);
@@ -43,10 +42,9 @@ const validateProductPayload = (payload) => {
   }
 };
 
-// @desc    Add a product (Admin)
 const addProduct = async (req, res, next) => {
   try {
-    // Use the centralized validation helper
+    
     validateProductPayload(req.body);
 
     const { name, description, category, seller, location, price, discount, availableQty, minimumQty, image } = req.body;
@@ -77,11 +75,11 @@ const addProduct = async (req, res, next) => {
   }
 };
 
-// @desc    Update entire product (Admin)
+
 const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    // Use the centralized validation helper
+    
     validateProductPayload(req.body);
 
     const { name, description, category, seller, location, price, discount, availableQty, minimumQty, image } = req.body;
@@ -89,7 +87,7 @@ const updateProduct = async (req, res, next) => {
     const docRef = db.collection('products').doc(id);
     const doc = await docRef.get();
     
-    // Point 3: Explicit existence check before updating
+   
     if (!doc.exists) {
       res.status(404);
       throw new Error("Product not found");
@@ -119,7 +117,6 @@ const updateProduct = async (req, res, next) => {
   }
 };
 
-// @desc    Update Product Stock
 const updateStock = async (req, res, next) => {
   try {
     const docRef = db.collection('products').doc(req.params.id);
@@ -148,7 +145,7 @@ const updateStock = async (req, res, next) => {
   }
 };
 
-// @desc    Update Product Discount
+
 const updateDiscount = async (req, res, next) => {
   try {
     const docRef = db.collection('products').doc(req.params.id);
@@ -177,7 +174,7 @@ const updateDiscount = async (req, res, next) => {
   }
 };
 
-// @desc    Deactivate a product
+
 const deactivateProduct = async (req, res, next) => {
   try {
     const docRef = db.collection('products').doc(req.params.id);
@@ -202,7 +199,6 @@ const deactivateProduct = async (req, res, next) => {
   }
 };
 
-// @desc    Activate a product
 const activateProduct = async (req, res, next) => {
   try {
     const docRef = db.collection("products").doc(req.params.id);
@@ -227,7 +223,7 @@ const activateProduct = async (req, res, next) => {
   }
 };
 
-// @desc    Delete a product permanently
+
 const deleteProduct = async (req, res, next) => {
   try {
     const docRef = db.collection("products").doc(req.params.id);
@@ -249,7 +245,7 @@ const deleteProduct = async (req, res, next) => {
   }
 };
 
-// @desc    Get Admin Dashboard Stats
+
 const getDashboardStats = async (req, res, next) => {
   try {
     const productsSnapshot = await db.collection('products').get();
@@ -264,7 +260,7 @@ const getDashboardStats = async (req, res, next) => {
     const enquiriesSnapshot = await db.collection('enquiries').get();
     const enquiries = enquiriesSnapshot.size;
     
-    // Point 4: Matches frontend keys perfectly
+
     res.status(200).json({ 
       success: true,
       data: { products: total, activeProducts: active, enquiries } 
@@ -274,7 +270,7 @@ const getDashboardStats = async (req, res, next) => {
   }
 };
 
-// @desc    Get ALL products (Admin)
+
 const getAllProducts = async (req, res, next) => {
   try {
     const snapshot = await db.collection("products").get();
@@ -307,5 +303,5 @@ module.exports = {
   deactivateProduct,
   deleteProduct,
   getDashboardStats,
-  getAllProducts, // <-- add this
+  getAllProducts,
 };

@@ -2,21 +2,17 @@ const { db } = require('../config/firebase');
 const { FieldValue } = require('firebase-admin/firestore');
 const { v4: uuidv4 } = require('uuid');
 
-// @desc    Submit a new buyer enquiry
-// @route   POST /api/enquiries
-// @access  Protected (Logged-in users)
 const createEnquiry = async (req, res, next) => {
   try {
     const { buyerName, mobile, email, deliveryLocation, requiredQuantity, message, productId } = req.body;
-    const userId = req.user.uid; // Retrieved from the verifyToken middleware
+    const userId = req.user.uid; 
 
-    // Validate fields
+
     if (!buyerName || !mobile || !email || !deliveryLocation || !requiredQuantity || !productId) {
       res.status(400);
       throw new Error('Please provide all required fields.');
     }
 
-    // 1. Verify the product exists and double-check stock limits on the backend
     const productDoc = await db.collection('products').doc(productId).get();
     if (!productDoc.exists) {
       res.status(404);
@@ -35,12 +31,11 @@ const createEnquiry = async (req, res, next) => {
       throw new Error(`Requested quantity exceeds available stock (${product.availableQty}).`);
     }
 
-    // 2. Generate a clean, structured unique reference number (e.g., ENQ-20260717-XXXX)
     const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const uniqueShortId = uuidv4().split('-')[0].toUpperCase();
     const referenceNumber = `ENQ-${today}-${uniqueShortId}`;
 
-    // 3. Construct the enquiry object
+
     const newEnquiry = {
       referenceNumber,
       userId,
@@ -52,11 +47,11 @@ const createEnquiry = async (req, res, next) => {
       message: message || '',
       productId,
       productName: product.name,
-      status: 'Pending', // Default status
-      createdAt: FieldValue.serverTimestamp() // Updated to server timestamp
+      status: 'Pending',
+      createdAt: FieldValue.serverTimestamp() 
     };
 
-    // 4. Save to Firestore
+  
     const docRef = await db.collection('enquiries').add(newEnquiry);
 
     res.status(201).json({
@@ -65,13 +60,10 @@ const createEnquiry = async (req, res, next) => {
       data: { id: docRef.id, ...newEnquiry }
     });
   } catch (error) {
-    next(error); // Passes error to the global errorHandler
+    next(error); 
   }
 };
 
-// @desc    Get all buyer enquiries (Admin feature)
-// @route   GET /api/enquiries/admin
-// @access  Private (Admin Only)
 const getAdminEnquiries = async (req, res, next) => {
   try {
     const enquiriesRef = db.collection('enquiries');
@@ -84,7 +76,7 @@ const getAdminEnquiries = async (req, res, next) => {
 
     res.status(200).json({ success: true, data: enquiries });
   } catch (error) {
-    next(error); // Passes error to the global errorHandler
+    next(error); 
   }
 };
 

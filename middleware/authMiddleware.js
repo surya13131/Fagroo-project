@@ -1,6 +1,6 @@
 const { auth, db } = require('../config/firebase');
 
-// Helper to generate more user-friendly error messages from Firebase Auth errors
+
 const getAuthErrorMessage = (errorCode) => {
   switch (errorCode) {
     case 'auth/id-token-expired':
@@ -12,7 +12,6 @@ const getAuthErrorMessage = (errorCode) => {
   }
 };
 
-// Middleware to verify if a user is logged in via Firebase
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -26,10 +25,9 @@ const verifyToken = async (req, res, next) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    // Verify Firebase token
+ 
     const decodedToken = await auth.verifyIdToken(token);
 
-    // Attach user info to request
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
@@ -47,7 +45,7 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-// Middleware to check if the verified user has an 'admin' role
+
 const isAdmin = async (req, res, next) => {
   try {
     const userDoc = await db.collection('users').doc(req.user.uid).get();

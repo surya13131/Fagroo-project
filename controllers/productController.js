@@ -1,6 +1,6 @@
 const { db, admin } = require('../config/firebase');
 
-// Point 5: Fixed calculate payload to match frontend expectations
+
 const calculateDiscount = (price, discount, qty) => {
   const discountedPrice = price - (price * discount) / 100;
 
@@ -12,7 +12,7 @@ const calculateDiscount = (price, discount, qty) => {
   };
 };
 
-// @desc    Get all products (with Search & Filter)
+
 const getProducts = async (req, res, next) => {
   try {
     const { search, category, seller, location } = req.query;
@@ -43,7 +43,6 @@ const getProducts = async (req, res, next) => {
   }
 };
 
-// @desc    Get single product by ID
 const getProductById = async (req, res, next) => {
   try {
     const doc = await db.collection('products').doc(req.params.id).get();
@@ -59,7 +58,6 @@ const getProductById = async (req, res, next) => {
   }
 };
 
-// @desc    Calculate backend discount logic
 const calculatePrice = async (req, res, next) => {
   try {
     const { productId, quantity } = req.body;

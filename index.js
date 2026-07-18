@@ -20,23 +20,22 @@ app.use(cors({
   credentials: true
 }));
 
-// Basic Middleware
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// API Routes
+
 app.use('/api/products', productRoutes);
 app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/admin', adminRoutes); 
 app.use('/api/categories', categoryRoutes);
 app.use('/api/auth', authRoutes);
 
-// Health Check Route
+
 app.get('/', (req, res) => {
   res.send('Faggro Backend is running successfully!');
 });
 
-// Custom Global Error Handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;

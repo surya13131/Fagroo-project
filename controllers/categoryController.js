@@ -1,9 +1,7 @@
-// controllers/categoryController.js
+
 const { db } = require('../config/firebase');
 const { FieldValue } = require('firebase-admin/firestore');
 
-// @desc    Get all categories
-// @route   GET /api/categories
 const getCategories = async (req, res, next) => {
   try {
     const snapshot = await db.collection('categories').get();
@@ -19,8 +17,7 @@ const getCategories = async (req, res, next) => {
   }
 };
 
-// @desc    Add a new category (Admin)
-// @route   POST /api/categories/admin/categories
+
 const addCategory = async (req, res, next) => {
   try {
     const { name, description } = req.body;
@@ -30,7 +27,7 @@ const addCategory = async (req, res, next) => {
       throw new Error('Category name is required');
     }
 
-    // Check if category already exists to prevent duplicates
+    
     const existing = await db.collection('categories').where('name', '==', name).get();
     if (!existing.empty) {
       res.status(400);
