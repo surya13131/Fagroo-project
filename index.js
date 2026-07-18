@@ -2,18 +2,18 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-// Route Imports
+
 const productRoutes = require('./routes/productRoutes');
 const enquiryRoutes = require('./routes/enquiryRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
 const categoryRoutes = require('./routes/categoryRoutes');
+const authRoutes = require('./routes/authRoutes');
 
-// Middleware Imports
 const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
 
-// ✅ FIX: Configure CORS to only allow your specific frontend domain
+
 app.use(cors({
   origin: 'https://fagroo-project-frontend.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -29,6 +29,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/admin', adminRoutes); 
 app.use('/api/categories', categoryRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health Check Route
 app.get('/', (req, res) => {

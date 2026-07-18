@@ -23,13 +23,45 @@ const verifyToken = async (req, res, next) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    // Validate the token against Firebase Auth
+    // 1. Validate the token against Firebase Auth
     const decodedToken = await auth.verifyIdToken(token);
-    
-    // Attach user info to the request object
+
+    // 2. Check for 24-hour session expiry
+  const SESSION_DURATION = 30 * 1000; // 24 hours in milliseconds
+    const loginTime = decodedToken.loginTime;
+
+    if (loginTime && Date.now() - loginTime > SESSION_DURATION) {
+      return res.status(401).json({
+        success: false,
+        message: 'Session expired. Please log in again.',
+      });
+    }
+
+    // 3. Fallback check using Firestore (covers edge cases where token hasn't been refreshed)
+    if (!loginTime) {
+      const userDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        if (
+          userData.loginTime &&
+          Date.now() - userData.loginTime > SESSION_DURATION
+        ) {
+          return res.status(401).json({
+            success: false,
+            message: 'Session expired. Please log in again.',
+          });
+        }
+      } else {
+        // If no user doc, they can't have a valid session.
+        return res.status(401).json({ success: false, message: 'User not found.' });
+      }
+    }
+
+    // 4. Attach user info to the request object
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
+      role: decodedToken.role, // Pass role from token if set
     };
     
     next();
