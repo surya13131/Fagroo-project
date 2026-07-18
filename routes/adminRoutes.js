@@ -12,7 +12,7 @@ const {
   getAllProducts,
 } = require('../controllers/adminController');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+
 
 // Protect all routes in this file: User must be logged in AND have admin role
 router.use(verifyToken, isAdmin);
